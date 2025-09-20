@@ -4,10 +4,20 @@ def expr(s: str) -> float:
         :param s: арифметическое выражение
         :return: Возвращает значение арфиметического выражения
     """
+    # проверка ошибок
+    if s == "":
+        raise ValueError
+    s_ = s.replace("-", "").replace("+", "").replace(".", "")
+    s_ = s_.replace("*", "").replace("/", "")
+    if not s_.isdigit():
+        raise ValueError
+
+    # предобработка строк
     s = s.replace(" ", "")
     exp = s.split("+")
     exp_ = [i.split("-") for i in exp]
 
+    # вызовы функции term
     for i in range(len(exp_)):
         if len(exp_[i]) == 1:
             exp_[i] = term(exp_[i][0])
@@ -15,6 +25,7 @@ def expr(s: str) -> float:
             for j in range(len(exp_[i])):
                 exp_[i][j] = term(exp_[i][j])
 
+    # вычисление итогового значения
     for i in range(len(exp_)):
         if type(exp_[i]) == list:
             start_num = exp_[i][0]
@@ -31,10 +42,20 @@ def term(s: str) -> float:
         :param s: арифметическое выражение
         :return: Возвращает значение арфиметического выражения
     """
+    # проверка ошибок
+    if s == "":
+        raise ValueError
+    s_ = s.replace("-", "").replace("+", "").replace(".", "")
+    s_ = s_.replace("*", "").replace("/", "")
+    if not s_.isdigit():
+        raise ValueError
+
+    # предобработка строк
     s = s.replace(" ", "")
     ter = s.split("*")
     ter_ = [i.split("/") for i in ter]
 
+    # вызовы функции factor
     for i in range(len(ter_)):
         if len(ter_[i]) == 1:
             ter_[i] = factor(ter_[i][0])
@@ -42,10 +63,13 @@ def term(s: str) -> float:
             for j in range(len(ter_[i])):
                 ter_[i][j] = factor(ter_[i][j])
 
+    # вычисление итогового значения
     for i in range(len(ter_)):
         if type(ter_[i]) == list:
             start_num = ter_[i][0]
             for j in range(1, len(ter_[i])):
+                if ter_[i][j] == 0:
+                    raise ZeroDivisionError
                 start_num /= ter_[i][j]
             ter_[i] = start_num
 
@@ -61,4 +85,6 @@ def factor(s: str) -> float:
         :param s: число
         :return: Возвращает число
     """
+    if s == "":
+        return 0
     return float(s)
