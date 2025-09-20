@@ -1,5 +1,4 @@
-from src.power import power_function
-from src.constants import SAMPLE_CONSTANT
+from functions import expr
 
 
 def main() -> None:
@@ -8,13 +7,12 @@ def main() -> None:
     :return: Данная функция ничего не возвращает
     """
 
-    target, degree = map(int, input("Введите два числа разделенные пробелом: ").split(" "))
-
-    result = power_function(target=target, power=degree)
-
-    print(result)
-
-    print(SAMPLE_CONSTANT)
+    print("Добро пожаловать в консольный калькулятор")
+    while True:
+        inp = input("Введите выражение для вычисления (для окончания работы введите end):")
+        if inp.strip() == "end":
+            break
+        print(expr(inp))
 
 if __name__ == "__main__":
     main()
