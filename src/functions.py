@@ -1,3 +1,6 @@
+from re import split
+
+
 def expr(s: str) -> float:
     """
         Функция, которая находит значение арифметического выражения (обработка + и -)
@@ -13,27 +16,50 @@ def expr(s: str) -> float:
         raise ValueError
 
     # предобработка строк
-    s = s.replace(" ", "")
-    exp = s.split("+")
-    exp_ = [i.split("-") for i in exp]
+    s = "0+" + s
+    s_ = s.replace("+-", "+~").replace("/-", "/~")
+    s_ = s_.replace("*-", "*~").replace(" ", "")
+    splitten_s = split(r'\s*([+-])\s*', s_)
 
     # вызовы функции term
-    for i in range(len(exp_)):
-        if len(exp_[i]) == 1:
-            exp_[i] = term(exp_[i][0])
-        else:
-            for j in range(len(exp_[i])):
-                exp_[i][j] = term(exp_[i][j])
+    splitten_s_clean = []
+    for elem_id in range(len(splitten_s)):
+        if splitten_s[elem_id] != "":
+            splitten_s_clean.append(splitten_s[elem_id])
+    splitten_s = splitten_s_clean
+    for elem_id in range(len(splitten_s)):
+        if splitten_s[elem_id] != "+" and splitten_s[elem_id] != "-":
+            splitten_s[elem_id] = term(splitten_s[elem_id])
 
     # вычисление итогового значения
-    for i in range(len(exp_)):
-        if type(exp_[i]) == list:
-            start_num = exp_[i][0]
-            for j in range(1, len(exp_[i])):
-                start_num -= exp_[i][j]
-            exp_[i] = start_num
+    result = 0.0
+    prev_elem = 1  # 0 - число, 1 - плюс, 2 - минус
+    for elem_id in range(len(splitten_s)):
+        if prev_elem == 1:
+            if splitten_s[elem_id] == "+":
+                raise SyntaxError
+            elif splitten_s[elem_id] == "-":
+                raise SyntaxError
+            else:
+                result += float(splitten_s[elem_id])
+        elif prev_elem == 2:
+            if splitten_s[elem_id] == "+":
+                raise SyntaxError
+            elif splitten_s[elem_id] == "-":
+                raise SyntaxError
+            else:
+                result -= float(splitten_s[elem_id])
+        else:
+            if splitten_s[elem_id] != "+" and splitten_s[elem_id] != "-":
+                raise SyntaxError
 
-    return sum(exp_)
+        if splitten_s[elem_id] == "+":
+            prev_elem = 1
+        elif splitten_s[elem_id] == "-":
+            prev_elem = 2
+        else:
+            prev_elem = 0
+    return result
 
 
 def term(s: str) -> float:
@@ -46,37 +72,51 @@ def term(s: str) -> float:
     if s == "":
         raise ValueError
     s_ = s.replace("-", "").replace("+", "").replace(".", "")
-    s_ = s_.replace("*", "").replace("/", "")
+    s_ = s_.replace("*", "").replace("/", "").replace("~", "")
     if not s_.isdigit():
         raise ValueError
 
     # предобработка строк
-    s = s.replace(" ", "")
-    ter = s.split("*")
-    ter_ = [i.split("/") for i in ter]
+    splitten_s = split(r'\s*([*/])\s*', s)
 
-    # вызовы функции factor
-    for i in range(len(ter_)):
-        if len(ter_[i]) == 1:
-            ter_[i] = factor(ter_[i][0])
-        else:
-            for j in range(len(ter_[i])):
-                ter_[i][j] = factor(ter_[i][j])
+    # вызовы функции term
+    for elem_id in range(len(splitten_s)):
+        if splitten_s[elem_id] == "":
+            raise SyntaxError
+        if splitten_s[elem_id] != "*" and splitten_s[elem_id] != "/":
+            splitten_s[elem_id] = factor(splitten_s[elem_id])
 
     # вычисление итогового значения
-    for i in range(len(ter_)):
-        if type(ter_[i]) == list:
-            start_num = ter_[i][0]
-            for j in range(1, len(ter_[i])):
-                if ter_[i][j] == 0:
+    result = 1.0
+    prev_elem = 1  # 0 - число, 1 - умножить, 2 - разделить
+    for elem_id in range(len(splitten_s)):
+        if prev_elem == 1:
+            if splitten_s[elem_id] == "*":
+                raise SyntaxError
+            elif splitten_s[elem_id] == "/":
+                raise SyntaxError
+            else:
+                result *= float(splitten_s[elem_id])
+        elif prev_elem == 2:
+            if splitten_s[elem_id] == "*":
+                raise SyntaxError
+            elif splitten_s[elem_id] == "/":
+                raise SyntaxError
+            else:
+                if splitten_s[elem_id] == 0:
                     raise ZeroDivisionError
-                start_num /= ter_[i][j]
-            ter_[i] = start_num
+                result /= float(splitten_s[elem_id])
+        else:
+            if splitten_s[elem_id] != "*" and splitten_s[elem_id] != "/":
+                raise SyntaxError
 
-    term_ans = 1
-    for obj in ter_:
-        term_ans *= obj
-    return term_ans
+        if splitten_s[elem_id] == "*":
+            prev_elem = 1
+        elif splitten_s[elem_id] == "/":
+            prev_elem = 2
+        else:
+            prev_elem = 0
+    return result
 
 
 def factor(s: str) -> float:
@@ -85,6 +125,7 @@ def factor(s: str) -> float:
         :param s: число
         :return: Возвращает число
     """
+    s = s.replace("~", "-")
     if s == "":
         return 0
     return float(s)
